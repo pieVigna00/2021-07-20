@@ -5,9 +5,12 @@
 package it.polito.tdp.yelp;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import it.polito.tdp.yelp.model.Model;
+import it.polito.tdp.yelp.model.User;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -38,13 +41,13 @@ public class FXMLController {
     private TextField txtX2; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbAnno"
-    private ComboBox<?> cmbAnno; // Value injected by FXMLLoader
+    private ComboBox<Integer> cmbAnno; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtN"
     private TextField txtN; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbUtente"
-    private ComboBox<?> cmbUtente; // Value injected by FXMLLoader
+    private ComboBox<User> cmbUtente; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtX1"
     private TextField txtX1; // Value injected by FXMLLoader
@@ -54,12 +57,40 @@ public class FXMLController {
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
+    	txtResult.clear();
+    	int numRece=0;
+    	int anno=0;
+    	try {
+    	String recensioni= this.txtN.getText();
+    	anno=this.cmbAnno.getValue();
+    	numRece= Integer.parseInt(recensioni);
+    	}catch(Exception e) {
+    		txtResult.setText("Devi inserire un numero per il numero di recensioni e per l'anno");
+    		return;
+    	}
+    	this.model.buildGraph(numRece, anno);
+    	Set<User> vertici=this.model.getVertici();
+    	this.cmbUtente.getItems().addAll(vertici);
+    	txtResult.setText("Grafo creato con: "+this.model.getNumVertici()+" vertici e "+this.model.getNumArchi()+" archi \n");
+    	
+    	
 
     }
 
     @FXML
     void doUtenteSimile(ActionEvent event) {
-
+    	User u=this.cmbUtente.getValue();
+    	if(u==null) {
+    		txtResult.setText("Devi selezionare un utente!");
+    		return;
+    	}
+    	List<User> simili=this.model.getSimile(u);
+    	int grado=this.model.gradoSimile(u);
+    	txtResult.appendText("Gli utenti simili sono : \n");
+    	for(User u1: simili) {
+    		txtResult.appendText(u1 +"GRADO: "+grado+"\n");
+    	}
+    	
     }
     
     @FXML
@@ -84,5 +115,8 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	for(int i=2005; i<2014; i++) {
+    	this.cmbAnno.getItems().add(i);
+    }
     }
 }
